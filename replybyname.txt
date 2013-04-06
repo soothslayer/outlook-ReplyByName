@@ -1,0 +1,75 @@
+Sub InsertNameInReplyTo()
+     
+    Dim Msg As Outlook.MailItem
+    Dim MsgReply As Outlook.MailItem
+    Dim strGreetName As String
+     
+    On Error Resume Next
+    Select Case TypeName(Application.ActiveWindow)
+    Case "Explorer"
+        Set Msg = ActiveExplorer.Selection.Item(1)
+    Case "Inspector"
+        Set Msg = ActiveInspector.CurrentItem
+    Case Else
+    End Select
+    On Error GoTo 0
+     
+    If Msg Is Nothing Then GoTo ExitProc
+     
+    strGreetName = FindSendersName(Msg.SenderName, Msg.CC, Msg.To)
+    
+    Set MsgReply = Msg.Reply
+    
+    With MsgReply
+        .Subject = ReInSubject(Msg.Subject)
+        .HTMLBody = "<span style='color:#1F497D;font-family:Calibri;font-size:11pt'""><p>" & strGreetName & ",</p></span>" & .HTMLBody
+        .Display
+    End With
+     
+ExitProc:
+    Set Msg = Nothing
+    Set MsgReply = Nothing
+End Sub
+Sub InsertNameInReplyToAll()
+     
+    Dim Msg As Outlook.MailItem
+    Dim MsgReply As Outlook.MailItem
+    Dim strGreetName As String
+     
+    On Error Resume Next
+    Select Case TypeName(Application.ActiveWindow)
+    Case "Explorer"
+        Set Msg = ActiveExplorer.Selection.Item(1)
+    Case "Inspector"
+        Set Msg = ActiveInspector.CurrentItem
+    Case Else
+    End Select
+    On Error GoTo 0
+     
+    If Msg Is Nothing Then GoTo ExitProc
+     
+    strGreetName = FindSendersName(Msg.SenderName, Msg.CC, Msg.To)
+    
+    Set MsgReply = Msg.ReplyAll
+    
+    With MsgReply
+        .Subject = ReInSubject(Msg.Subject)
+        .HTMLBody = "<span style='color:#1F497D;font-family:Calibri;font-size:11pt'""><p>" & strGreetName & ",</p></span>" & .HTMLBody
+        .Display
+    End With
+     
+ExitProc:
+    Set Msg = Nothing
+    Set MsgReply = Nothing
+End Sub
+Function ReInSubject(strMsgSubject As String) As String
+    '/Only include "RE:" in the subject if it's not already there
+    If Left(strMsgSubject, 3) = "RE:" Then
+        ReInSubject = strMsgSubject
+    Else
+        ReInSubject = "RE:" & strMsgSubject
+    End If
+End Function
+Function FindSendersName(strSenderName As String, strCCName As String, strToName As String) As String
+    FindSendersName = Right$(strSenderName, Len(strSenderName) - InStr(1, strSenderName, ",") - 1)
+End Function
